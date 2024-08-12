@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use Dotenv\Validator;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -20,11 +21,31 @@ class ProductController extends Controller
         }
 
     }
-    public function store(){
+    public function store(Request $request){
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(),[
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'price' => 'required|integer',
+        ]);
+        if($validator->fails()){
+            return response()->json([
+                'message' => 'All fields are required',
+                'errors' => $validator->errors()
+            ],422);
+        }
+     $product =    Product::create([
+            'name'=> $request->name,
+            'description'=> $request->description,
+            'price'=> $request->price
+        ]);
 
+     return response()->json([
+         'message' => 'Product created successfully',
+         'data'=> new ProductResource($product)
+     ],200);
     }
-    public function show(){
-
+    public function show(Product $product){
+    return new ProductResource($product);
     }
     public function update(){
 
